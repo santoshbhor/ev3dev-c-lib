@@ -14,22 +14,22 @@ namespace Ev3Dev
     public static class Ev3Dev//this is for creating links to devices
     {
         //key=name Value=RootToDirectory
-        public static Dictionary<string, string> Items { get; private set; }
-        public static void INIT()
-        {
-            Items = new Dictionary<string, string>();
-            string[] Classes = new string[]
+        internal static readonly string[] Classes = new string[]
             {
                 "dc-motor/",
                 "servo-motor/",
                 "tacho-motor/",
                 "lego-port/",
             };
+        public static Dictionary<string, string> Items { get; private set; }
+        public static void INIT()
+        {
+            Items = new Dictionary<string, string>();
             for (int x = 0; x < Classes.Length; x++)
             {
                 string[] addrs = Directory.GetFiles("/sys/class/"+Classes[x]);
                 for (int y = 0; y < addrs.Length; y++)
-                    Items.Add(Classes[x] + addrs[y], "/sys/class/" + Classes[x] + addrs[x]);
+                    Items.Add(Classes[x] + addrs[y], "/sys/class/" + Classes[x] + addrs[y]);
             }
         }
 
@@ -51,6 +51,7 @@ namespace Ev3Dev
         }
         public static DeviceType String_To_DeviceType(string x)
         {
+            x = x.Replace("/", "");
             switch(x)
             {
                 case ("dc-motor"):
@@ -128,12 +129,28 @@ namespace Ev3Dev
                 throw new ArgumentOutOfRangeException();
         }
     }
-
+    public static class KnownDrivers
+    {
+        //need to add these
+        public const string LegoEv3LMotor = "lego-ev3-l-motor";
+        public const string LegoEv3MMotor = "lego-ev3-m-motor";
+        public const string NxtI2cSensor  = "nxt-i2c-sensor";
+        public const string LegoEv3Color  = "lego-ev3-color";
+        public const string LegoEv3Us     = "lego-ev3-us";
+        public const string LegoNxtUs     = "lego-nxt-us";
+        public const string LegoEv3Gyro   = "lego-ev3-gyro";
+        public const string LegoEv3Ir     = "lego-ev3-ir";
+        public const string LegoNxtSound  = "lego-nxt-sound";
+        public const string LegoNxtLight  = "lego-nxt-light";
+        public const string LegoEv3Touch  = "lego-ev3-touch";
+        public const string LegoNxtTouch  = "lego-nxt-touch";
+    }
     public struct Device
     {
         public string RootToDir { get; internal set; }
         public string[] Options { get; internal set; }
         public DeviceType _type { get; internal set; }
+        public string DriverName { get; internal set; }
         public bool Connected { get { return Directory.Exists(RootToDir); }}
     }
 }

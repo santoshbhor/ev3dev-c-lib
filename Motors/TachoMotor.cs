@@ -47,48 +47,24 @@ namespace Ev3Dev.Motors
 
     public class TachoMotor
     {
+
         //values
         //my Rule not matter what all of the values must be updated inside UPDATE
         //unless there NON-READ ie 'onlywriteable'(w)
-        public string Address { get; private set; }
-        public int Max_Speed { get; private set; }
-        public int Speed { get; private set; }
-        public int Position { get; private set; }
-        public int Dutycycle { get; private set; }
-        public int RampUpSpeed { get; private set; }
-        public int RampDownSpeed { get; private set; }
-        public TachoMotor_Polarity Polarity { get; private set; }
-        public int RPM { get; private set; }
-        public string DriverName { get; private set; }
-        public TachoMotor_Commands LastCommand { get; private set; }//NON-READ
-        public TachoMotor_States State { get; private set; }
-        public TachoMotor_StopActions StopAction { get; private set; }
-
-        //my members
-        public bool NoDeley = false;//this says if we should NOT sleep while updating args
-        public int Deley_MS = 30;//this is the time to sleep if !NoDeley
+        public string Address                       { get { try { return ReadVar("address");  } catch { return "N/A"; } } }
+        public int Max_Speed                        { get { try { return int.Parse(ReadVar("max_speed")); } catch { return -1; } } }
+        public int Speed                            { get { try { return int.Parse(ReadVar("speed")); } catch { return -1; } } }
+        public int Position                         { get { try { return int.Parse(ReadVar("position")); } catch { return -1; } } }
+        public int Dutycycle                        { get { try { return int.Parse(ReadVar("duty_cycle")); } catch { return -1; } } }
+        public int RampUpSpeed                      { get { try { return int.Parse(ReadVar("ramp_up_sp")); } catch { return -1; } } }
+        public int RampDownSpeed                    { get { try { return int.Parse(ReadVar("ramp_down_sp")); } catch { return -1; } } }
+        public TachoMotor_Polarity Polarity         { get { try { return String_To_TachoMotor_Polarity(ReadVar("polarity")); } catch { return TachoMotor_Polarity.normal; } } }
+        public int RPM                              { get { try { return int.Parse(ReadVar("count_per_rot")); } catch { return -1; } } }
+        public string DriverName                    { get { try { return ReadVar("driver_name"); } catch { return "N/A"; } } }
+        public TachoMotor_Commands LastCommand      { get; private set; }//NON-READ
+        public TachoMotor_States State              { get { try { return String_To_TachoMotor_States(ReadVar("state")); } catch { return TachoMotor_States.stalled; } } }
+        public TachoMotor_StopActions StopAction    { get { try { return String_To_TachoMotor_StopActions(ReadVar("stop_action")); } catch { return TachoMotor_StopActions.coast; } } }
         
-        public Thread UpdateTHR;
-        void UPDATE()
-        {
-            while(true)
-            {
-                Speed = int.Parse(ReadVar("speed"));
-                Position = int.Parse(ReadVar("position"));
-                Dutycycle = int.Parse(ReadVar("duty_cycle"));
-                RPM = int.Parse(ReadVar("count_per_rot"));
-                Max_Speed = int.Parse(ReadVar("max_speed"));
-                Polarity = String_To_TachoMotor_Polarity(ReadVar("polarity"));
-                DriverName = ReadVar("driver_name");
-                State = String_To_TachoMotor_States(ReadVar("state"));
-                StopAction = String_To_TachoMotor_StopActions(ReadVar("stop_action"));
-                Address = ReadVar("address");
-                RampDownSpeed = int.Parse(ReadVar("ramp_down_sp"));
-                RampUpSpeed = int.Parse(ReadVar("ramp_up_sp"));
-
-                if (!NoDeley) Thread.Sleep(Deley_MS);
-            }
-        }//UPDATE_THREAD
 
         //my header info
         public string RootToDir { get; private set; }
@@ -116,8 +92,7 @@ namespace Ev3Dev.Motors
                 throw new InvalidOperationException("this device is not a tachno motor");
 
             RootToDir = dev.RootToDir;
-            UpdateTHR = new Thread(new ThreadStart(UPDATE));
-            if (RootToDir.StartsWith("/sys/class/tacho-motor/motor"))
+            if (RootToDir.Contains("tacho-motor"))
                 MountPoint = ReadVar("address");
             else if(RootToDir.Contains(":"))
                 MountPoint = RootToDir;
@@ -130,7 +105,6 @@ namespace Ev3Dev.Motors
                     "speed_pid/kd:rw",      "speed_pid/ki:rw",  "speed_pid/kp:rw",  "state:r",          "stop_action:rw",
                     "stop_actions:r",       "time_sp:rw"
                 };
-            UpdateTHR.Start();
         }
 
         //helpers
@@ -259,7 +233,7 @@ namespace Ev3Dev.Motors
                     return TachoMotor_Commands.run_forever;
                 case ("run-timed"):
                     return TachoMotor_Commands.run_timed;
-                case ("run-to_abs_pos"):
+                case ("run-to-abs-pos"):
                     return TachoMotor_Commands.run_to_abs_pos;
                 case ("run-to-rel-pos"):
                     return TachoMotor_Commands.run_to_rel_pos;

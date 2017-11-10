@@ -42,33 +42,15 @@ namespace Ev3Dev.Motors
         //values
         //my Rule not matter what all of the values must be updated inside UPDATE
         //unless there NON-READ ie 'onlywriteable'(w)
-        public string Address { get; private set; }
-        public DcMotor_Commands LastCommand { get; private set; }//NON-READ
-        public int Dutycycle { get; private set; }
-        public int RampUpSpeed { get; private set; }
-        public int RampDownSpeed { get; private set; }
-        public DcMotor_Polarity Polarity { get; private set; }
-        public DcMotor_States State { get; private set; }
-        public DcMotor_StopActions StopAction { get; private set; }//NON-READ
-
-        //my members
-        public bool NoDeley = false;//this says if we should NOT sleep while updating args
-        public int Deley_MS = 30;//this is the time to sleep if !NoDeley
-
-        private Thread UpdateTHR;
-        private void UPDATE()
-        {
-            while (true)
-            {
-                Address = ReadVar("address");
-                Dutycycle = int.Parse(ReadVar("duty_cycle"));
-                Polarity = String_To_DcMotor_Polarity(ReadVar("polarity"));
-                State = String_To_DcMotor_States(ReadVar("state"));
-
-                if (!NoDeley) Thread.Sleep(Deley_MS);
-            }
-        }
-
+        public string Address                       { get { try { return ReadVar("address"); } catch { return "N/A"; } } }
+        public DcMotor_Commands LastCommand         { get; private set; }//NON-READ
+        public int Dutycycle                        { get { try { return int.Parse(ReadVar("duty_cycle")); } catch { return -1; } } }
+        public int RampUpSpeed                      { get { try { return int.Parse(ReadVar("ramp_up_sp")); } catch { return -1; } } }
+        public int RampDownSpeed                    { get { try { return int.Parse(ReadVar("ramp_down_sp")); } catch { return -1; } } }
+        public DcMotor_Polarity Polarity            { get { try { return String_To_DcMotor_Polarity(ReadVar("polarity")); } catch { return DcMotor_Polarity.normal; } } }
+        public DcMotor_States State                 { get { try { return String_To_DcMotor_States(ReadVar("state")); ; } catch { return DcMotor_States.ramping; } } }
+        public DcMotor_StopActions StopAction       { get; private set; }//NON-READ
+        
         //my header info
         public string RootToDir { get; private set; }
         public string MountPoint { get; private set; }
@@ -99,9 +81,8 @@ namespace Ev3Dev.Motors
                 throw new InvalidOperationException("this device is not a tachno motor");
 
             RootToDir = dev.RootToDir;
-            UpdateTHR = new Thread(new ThreadStart(UPDATE));
 
-            if (RootToDir.StartsWith("/sys/class/dc-motor/motor"))
+            if (RootToDir.Contains("dc-motor"))
                 MountPoint = "??";//ReadVar("address");
             else if (RootToDir.Contains(":"))
                 MountPoint = RootToDir;
@@ -113,7 +94,6 @@ namespace Ev3Dev.Motors
                     "stop_action:w","stop_actions:r",   "ramp_down_sp:rw",  "ramp_up_sp:rw",
                     "time_sp:rw"
                 };
-            UpdateTHR.Start();
         }
 
         //helpers

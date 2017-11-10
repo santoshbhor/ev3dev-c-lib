@@ -34,43 +34,18 @@ namespace Ev3Dev.Motors
         //values
         //my Rule not matter what all of the values must be updated inside UPDATE
         //unless there NON-READ ie 'onlywriteable'(w)
-        public string Address { get; private set; }
-        public ServoMotor_Commands LastCommand { get; private set; }//NON-READ
-        public string DriverName { get; private set; }
-        public int MaxPulse { get; private set; }
-        public int MidPulse { get; private set; }
-        public int MinPulse { get; private set; }
-        public ServoMotor_Polarity Polarity { get; private set; }
-        public int Rate { get; private set; }
-        public bool RateSupported { get; private set; }
-        public int Position { get; private set; }
-        public ServoMotor_States State { get; private set; }
-
-        //my members
-        public bool NoDeley = false;//this says if we should NOT sleep while updating args
-        public int Deley_MS = 30;//this is the time to sleep if !NoDeley
-
-        private Thread UpdateTHR;
-        private void UPDATE()
-        {
-            while (true)
-            {
-                Address = ReadVar("address");
-                DriverName = ReadVar("driver_name");
-                MaxPulse = int.Parse(ReadVar("max_pulse_sp"));
-                MidPulse = int.Parse(ReadVar("mid_pulse_sp"));
-                MinPulse = int.Parse(ReadVar("min_pulse_sp"));
-                Position = int.Parse(ReadVar("position_sp"));
-                if (RateSupported)
-                {
-                    string rt = ReadVar("rate_sp");
-                    if (rt == "-EOPNOTSUPP") RateSupported = false;
-                    else
-                        Rate = int.Parse(rt);
-                }
-                if (!NoDeley) Thread.Sleep(Deley_MS);
-            }
-        }
+        public string Address                       { get { try { return ReadVar("address"); } catch { return "N/A"; } } }
+        public ServoMotor_Commands LastCommand      { get; private set; }//NON-READ
+        public string DriverName                    { get { try { return ReadVar("driver_name"); } catch { return "N/A"; } } }
+        public int MaxPulse                         { get { try { return int.Parse(ReadVar("max_pulse_sp")); } catch { return -1; } } }
+        public int MidPulse                         { get { try { return int.Parse(ReadVar("mid_pulse_sp")); } catch { return -1; } } }
+        public int MinPulse                         { get { try { return int.Parse(ReadVar("min_pulse_sp")); } catch { return -1; } } }
+        public ServoMotor_Polarity Polarity         { get { try { return String_To_ServoMotor_Polarity(ReadVar("polarity")); } catch { return ServoMotor_Polarity.normal; } } }
+        public int Rate                             { get { try { return int.Parse(ReadVar("rate_sp")); } catch { return -1; } } }
+        public bool RateSupported                   { get { try { return (ReadVar("rate_sp") == "-EOPNOTSUPP") ? false : true; } catch { return false; } } }
+        public int Position                         { get { try { return int.Parse(ReadVar("position_sp")); } catch { return 0; } } }
+        public ServoMotor_States State              { get { try { return String_To_ServoMotor_States(ReadVar("state")); } catch { return ServoMotor_States.running; } } }
+        
 
         //my header info
         public string RootToDir { get; private set; }
@@ -94,8 +69,7 @@ namespace Ev3Dev.Motors
                 throw new InvalidOperationException("this device is not a tachno motor");
 
             RootToDir = dev.RootToDir;
-            UpdateTHR = new Thread(new ThreadStart(UPDATE));
-            if (RootToDir.StartsWith("/sys/class/servo-motor/motor"))
+            if (RootToDir.Contains("servo-motor"))
                 MountPoint = "??";//ReadVar("address");
             else if (RootToDir.Contains(":"))
                 MountPoint = RootToDir;
@@ -105,7 +79,6 @@ namespace Ev3Dev.Motors
                     "mid_pulse_sp:rw",  "min_pulse_sp:rw",  "polarity:rw",      "position_sp:rw",
                     "rate_sp:rw",       "state:r"
                 };
-            UpdateTHR.Start();
         }
 
         //helpers

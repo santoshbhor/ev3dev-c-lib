@@ -15,6 +15,78 @@ namespace Ev3Dev
     //ie we read as information is given
     public static class BrickControll
     {
+        public static void LoadPorts()
+        {
+            InputPorts.In1 = new Device() { RootToDir = "/sys/class/lego-port/port0" };
+            InputPorts.In2 = new Device() { RootToDir = "/sys/class/lego-port/port1" };
+            InputPorts.In3 = new Device() { RootToDir = "/sys/class/lego-port/port2" };
+            InputPorts.In4 = new Device() { RootToDir = "/sys/class/lego-port/port3" };
+            OutputPorts.OutA = new Device() { RootToDir = "/sys/class/lego-port/port4" };
+            OutputPorts.OutB = new Device() { RootToDir = "/sys/class/lego-port/port5" };
+            OutputPorts.OutC = new Device() { RootToDir = "/sys/class/lego-port/port6" };
+            OutputPorts.OutD = new Device() { RootToDir = "/sys/class/lego-port/port7" };
+
+            InputPorts.In1 = UpdateDev(InputPorts.In1, "in1");
+            InputPorts.In2 = UpdateDev(InputPorts.In2, "in3");
+            InputPorts.In3 = UpdateDev(InputPorts.In3, "in2");
+            InputPorts.In4 = UpdateDev(InputPorts.In4, "in4");
+
+            OutputPorts.OutA = UpdateDev(OutputPorts.OutA, "outA");
+            OutputPorts.OutB = UpdateDev(OutputPorts.OutB, "outB");
+            OutputPorts.OutC = UpdateDev(OutputPorts.OutC, "outC");
+            OutputPorts.OutD = UpdateDev(OutputPorts.OutD, "outD");
+        }
+        private static Device UpdateDev(Device D, string Addr)
+        {
+            if (D.RootToDir != null)
+                if (D.RootToDir.StartsWith("/sys/class/lego-port/port"))
+                {
+                    string r = D.RootToDir;
+                    string[] Directorys = Directory.GetDirectories(r);
+                    if (Directorys.Length > 0)
+                    {
+                        int x = 0;
+                        for (; x < Directorys.Length; x++)
+                        {
+                            if (Directorys[x].Contains(":"))
+                                break;
+                        }
+                        if (x < Directorys.Length)
+                        {
+                            r = Directorys[x];
+                            if (r.Contains(":"))
+                            {
+                                Directorys = Directory.GetDirectories(r);
+                                x = 0;
+                                for (; x < Directorys.Length; x++)
+                                    for (int y = 0; y < Ev3Dev.Classes.Length; y++)
+                                    {
+                                        if (Directorys[x].Substring(Directorys[x].LastIndexOf("/") + 1) + "/" == Ev3Dev.Classes[y])
+                                        {
+                                            D._type = Ev3Dev.String_To_DeviceType(Ev3Dev.Classes[y]);
+                                            r = Directorys[x];
+                                            break;
+                                        }
+                                    }
+                                Directorys = Directory.GetDirectories("/sys/class/" + Ev3Dev.DeviceType_To_String(D._type));
+                                for (x = 0; x < Directorys.Length; x++)
+                                {
+                                    if (ReadVar(Directorys[x] + "/address") == Addr)
+                                    {
+                                        D.RootToDir = Directorys[x];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            return D;
+        }
+        private static string ReadVar(string path)
+        {
+            return IO.ReadValue(path);
+        }
 
         //TODO add some Controlls for the Brick
         public static class Battery//info on the battery
@@ -73,7 +145,7 @@ namespace Ev3Dev
                 public static int LineLength { get { return X; } }
                 public static int BufferSize { get; private set; }
                 private static int X, Y;
-                
+
                 public static void WriteBuffer(LCDIMG img)
                 {
                     if (img.Buffer.Length != BufferSize) throw new ArgumentOutOfRangeException();
@@ -230,12 +302,27 @@ namespace Ev3Dev
             //do descovery then display devices here
             //warning hot swaping devices will not work as expected
             //if i dont update input every so often
+            //mnt points 'In<1-4>:' 
+
+            //WARNING UNTESTED
+            public static Device In1 { get; internal set; }
+            public static Device In2 { get; internal set; }
+            public static Device In3 { get; internal set; }
+            public static Device In4 { get; internal set; }
         }
         public static class OutputPorts//all Outputports ... so the devices them self's
         {
             //do descovery then display devices here
             //warning hot swaping devices will not work as expected
             //if i dont update input every so often
+            //mnt points 'Out<A-D>:'
+
+            //WARNING UNTESTED
+            public static Device OutA { get; internal set; }
+            public static Device OutB { get; internal set; }
+            public static Device OutC { get; internal set; }
+            public static Device OutD { get; internal set; }
+
         }
     }
 }

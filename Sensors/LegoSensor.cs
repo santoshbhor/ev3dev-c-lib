@@ -30,63 +30,25 @@ namespace Ev3Dev.Sensors
         //values
         //my Rule not matter what all of the values must be updated inside UPDATE
         //unless there NON-READ ie 'onlywriteable'(w)
-        public string TextValue { get; private set; }
-        public int[] Values { get; private set; }
-        public string Units { get; private set; }
-        public int Poll { get; private set; }
-        public bool PollSupported { get; private set; }
-        public int NumValues { get; private set; }
-        public string Modes { get; private set; }
-        public string Mode { get; private set; }
-        public string FWVersion { get; private set; }
-        public string DriverName { get; private set; }
-        public int Decimals { get; private set; }
-        public byte[] Direct { get; private set; }
-        public bool DirectSupported { get; private set; }
-        public string Commands { get; private set; }
-        public string LastCommand { get; private set; }//NON-READ
-        public bool CommandsSupported { get; private set; }
-        public LegoSensor_BinFormats BinDataFormat { get; private set; }
-        public byte[] BinData { get; private set; }
-        public string Address { get; private set; }
-
-        //my members
-        public bool NoDeley = false;//this says if we should NOT sleep while updating args
-        public int Deley_MS = 30;//this is the time to sleep if !NoDeley
-
-        private Thread UpdateTHR;
-        private void UPDATE()
-        {
-            while (true)
-            {
-                DirectSupported = (ReadVar("direct") == "-EOPNOTSUPP") ? false:true;
-                CommandsSupported = (ReadVar("commands") == "-EOPNOTSUPP") ? false : true;
-                PollSupported = (ReadVar("poll_ms") == "-EOPNOTSUPP") ? false : true;
-                FWVersion = ReadVar("fw_version");
-                DriverName = ReadVar("driver_name");
-                Mode = ReadVar("mode");
-                Modes = ReadVar("modes");
-                NumValues = int.Parse(ReadVar("num_values"));
-                Decimals = int.Parse(ReadVar("decimals"));
-                BinDataFormat = String_To_LegoSensor_BinFormats(ReadVar("bin_data_format"));
-                Address = ReadVar("address");
-                Units = ReadVar("units");
-                TextValue = ReadVar("text_value");
-
-                if (PollSupported) Poll = int.Parse(ReadVar("poll_ms"));
-                if (CommandsSupported) Commands = ReadVar("commands");
-                if (NumValues > 0)
-                {
-                    Values = new int[NumValues];
-                    for(int x = 0;x < NumValues; x++)
-                    {
-                        Values[x] = int.Parse(ReadVar("value" + x));
-                    }
-                }
-                if (!NoDeley) Thread.Sleep(Deley_MS);
-            }
-        }
-
+        public int[] Values                             { get { try { int[] Vs = new int[NumValues]; for (int x = 0; x < NumValues; x++){ Vs[x] = int.Parse(ReadVar("value" + x)); };return Vs; } catch { return null; } } }
+        public string TextValue                         { get { try { return ReadVar("text_value"); } catch { return "N/A"; } } }
+        public string Units                             { get { try { return ReadVar("units"); } catch { return "N/A"; } } }
+        public int Poll                                 { get { try { return int.Parse(ReadVar("poll_ms")); } catch { return -1; } } }
+        public bool PollSupported                       { get { try { return (ReadVar("poll_ms") == "-EOPNOTSUPP") ? false : true; } catch { return false; } } }
+        public int NumValues                            { get { try { return int.Parse(ReadVar("num_values")); } catch { return -1; } } }
+        public string Modes                             { get { try { return ReadVar("modes"); } catch { return "N/A"; } } }
+        public string Mode                              { get { try { return ReadVar("mode"); } catch { return "N/A"; } } }
+        public string FWVersion                         { get { try { return ReadVar("fw_version"); } catch { return "N/A"; } } }
+        public string DriverName                        { get { try { return ReadVar("driver_name"); } catch { return "N/A"; } } }
+        public int Decimals                             { get { try { return int.Parse(ReadVar("decimals")); } catch { return -1; } } }
+        public bool DirectSupported                     { get { try { return (ReadVar("direct") == "-EOPNOTSUPP") ? false : true; } catch { return false; } } }
+        public string Commands                          { get { try { return ReadVar("commands"); } catch { return "N/A"; } } }
+        public string LastKnownCommand                  { get; private set; }//NON-READ
+        public bool CommandsSupported                   { get { try { return (ReadVar("commands") == "-EOPNOTSUPP") ? false : true; ; } catch { return false; } } }
+        public LegoSensor_BinFormats BinDataFormat      { get { try { return String_To_LegoSensor_BinFormats(ReadVar("bin_data_format")); } catch { return LegoSensor_BinFormats.Int; } } }
+        public string BinDataPath                       { get { return RootToDir + "/bin_data"; } }
+        public string Address                           { get { try { return ReadVar("address"); } catch { return "N/A"; } } }
+        
         //my header info
         public string RootToDir { get; private set; }
         public string MountPoint { get; private set; }
@@ -109,9 +71,8 @@ namespace Ev3Dev.Sensors
                 throw new InvalidOperationException("this device is not a tachno motor");
 
             RootToDir = dev.RootToDir;
-            UpdateTHR = new Thread(new ThreadStart(UPDATE));
 
-            if (RootToDir.StartsWith("/sys/class/dc-motor/motor"))
+            if (RootToDir.Contains("dc-motor"))
                 MountPoint = "??";//ReadVar("address");
             else if (RootToDir.Contains(":"))
                 MountPoint = RootToDir;
@@ -123,7 +84,6 @@ namespace Ev3Dev.Sensors
                     "fw_version",   "mode:rw",          "modes:r",              "num_values:r",
                     "poll_ms:rw",   "units:r",          "value<0-9>:r",         "text_value"
                 };
-            UpdateTHR.Start();
         }
 
         //helpers

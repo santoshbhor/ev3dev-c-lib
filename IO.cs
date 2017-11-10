@@ -8,9 +8,9 @@ namespace Ev3Dev
         {
             if(File.Exists(path))
             {
-                using (StreamReader R = new StreamReader(new FileStream(path, FileMode.Open)))
+                using (StreamReader R = new StreamReader(File.OpenRead(path)))
                 {
-                    return R.ReadToEnd();
+                    return R.ReadToEnd().Replace("\n","");
                 }
             }else throw new FileNotFoundException();
         }
@@ -18,7 +18,7 @@ namespace Ev3Dev
         {
             if (File.Exists(path))
             {
-                using (StreamWriter W = new StreamWriter(new FileStream(path, FileMode.Open)))
+                using (StreamWriter W = new StreamWriter(File.OpenWrite(path)))
                 {
                     W.BaseStream.SetLength(0);//null file
                     W.Write(value);//make file only this value

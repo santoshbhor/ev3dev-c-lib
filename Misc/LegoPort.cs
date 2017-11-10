@@ -18,30 +18,12 @@ namespace Ev3Dev.Misc
         //values
         //my Rule not matter what all of the values must be updated inside UPDATE
         //unless there NON-READ ie 'onlywriteable'(w)
-        public string Address { get; private set; }
-        public string DriverName { get; private set; }
-        public string Modes { get; private set; }
-        public string Mode { get; private set; }
-        public string Status { get; private set; }
-        public string LastDeviceType { get; private set; }//NON-READ
-
-        //my members
-        public bool NoDeley = false;//this says if we should NOT sleep while updating args
-        public int Deley_MS = 30;//this is the time to sleep if !NoDeley
-
-        private Thread UpdateTHR;
-        private void UPDATE()
-        {
-            while (true)
-            {
-                Address = ReadVar("address");
-                DriverName = ReadVar("driver_name");
-                Modes = ReadVar("modes");
-                Mode = ReadVar("mode");
-                Status = ReadVar("status");
-                if (!NoDeley) Thread.Sleep(Deley_MS);
-            }
-        }
+        public string Address { get { try { return ReadVar("address"); } catch { return "N/A"; } } }
+        public string DriverName { get { try { return ReadVar("driver_name"); } catch { return "N/A"; } } } 
+        public string Modes { get { try { return ReadVar("modes"); } catch { return "N/A"; } } }
+        public string Mode { get { try { return ReadVar("mode"); } catch { return "N/A"; } } }
+        public string Status { get { try { return ReadVar("status"); } catch { return "N/A"; } } }
+        public string LastKnownDeviceType { get; private set; }//NON-READ
 
         //my header info
         public string RootToDir { get; private set; }
@@ -58,7 +40,7 @@ namespace Ev3Dev.Misc
             IO.WriteValue(RootToDir + "/" + var, value);
             if (var == "set_device")
             {
-                LastDeviceType = var;
+                LastKnownDeviceType = var;
             }
         }
 
@@ -69,9 +51,8 @@ namespace Ev3Dev.Misc
                 throw new InvalidOperationException("this device is not a tachno motor");
 
             RootToDir = dev.RootToDir;
-            UpdateTHR = new Thread(new ThreadStart(UPDATE));
 
-            if (RootToDir.StartsWith("/sys/class/lego-port/port"))
+            if (RootToDir.Contains("lego-port"))
                 MountPoint = "??";//ReadVar("address");
             else if (RootToDir.Contains(":"))
                 MountPoint = RootToDir;
@@ -80,7 +61,6 @@ namespace Ev3Dev.Misc
             Options = new string[] {// r=readonly | rw=read+write | w=writeonly
                     "address:r", "driver_name:r", "modes:r", "set_device:w", "status:r"
                 };
-            UpdateTHR.Start();
         }
 
         //functions
