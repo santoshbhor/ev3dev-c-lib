@@ -10,6 +10,9 @@ namespace Ev3Dev
         dc_motor,
         servo_motor,
         lego_port,
+        lego_ev3_touch,
+        lego_ev3_gyro,
+        lego_ev3_light,
     }
     public static class Ev3Dev//this is for creating links to devices
     {
@@ -62,6 +65,10 @@ namespace Ev3Dev
                     return DeviceType.tacho_motor;
                 case ("lego-port"):
                     return DeviceType.lego_port;
+                case ("lego-ev3-touch"):
+                    return DeviceType.lego_ev3_touch;
+                case ("lego-ev3-gyro"):
+                    return DeviceType.lego_ev3_gyro;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -78,6 +85,10 @@ namespace Ev3Dev
                     return "tacho-motor";
                 case (DeviceType.lego_port):
                     return "lego-port";
+                case (DeviceType.lego_ev3_touch):
+                    return "lego-ev3-touch";
+                case (DeviceType.lego_ev3_gyro):
+                    return "lego-ev3-gyro";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
