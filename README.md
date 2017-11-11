@@ -24,15 +24,15 @@ move the files to the ev3 brick.
 create the program and compile it on your pc like any other c# program
 
 ### Second
-using PSCP move the Ev3Dev.dll, <projname>.exe and anyother files you might need to run <projname>.exe
+using PSCP move the Ev3Dev.dll, projname.exe and anyother files you might need to run projname.exe
   Example of using PSCP in cmd
-  pscp -pw maker <PathToProj>/<projname>/bin/Ev3Dev.dll robot@<ev3dev ip>: &&
-  pscp -pw maker <PathToProj>/<projname>/bin/<projname>.exe robot@<ev3dev ip>:
+  pscp -pw maker PathToProj/projname/bin/Ev3Dev.dll robot@ev3dev ip: &&
+  pscp -pw maker PathToProj/projname/bin/projname.exe robot@ev3dev ip:
   
 ### Third
 now you run the code
   In ssh terminal to Ev3 brick
-  mono ~/<projname>.exe
+  mono ~/projname.exe
 and it will work
   
   
