@@ -34,6 +34,7 @@ now you run the code
   In ssh terminal to Ev3 brick
   mono ~/projname.exe
 and it will work
+**note if you want to run it from the brick its self you will need to make an sh file with the command shown above in it then using chmod make it an exicutable the easyest way to do this is (echo mono ~/projname.exe >> start.sh && chmod 755 start.sh) do make shure to do this in the home directory (you can go there by doing (cd ~))**
   
   
 if you have any problems please tell me in the issues, i will try to fix as much as posibal.
