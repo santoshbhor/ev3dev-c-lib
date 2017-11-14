@@ -6,6 +6,7 @@ namespace Ev3Dev
 {
     public enum DeviceType
     {
+        Unknown,
         tacho_motor,
         dc_motor,
         servo_motor,
@@ -13,6 +14,7 @@ namespace Ev3Dev
         lego_ev3_touch,
         lego_ev3_gyro,
         lego_ev3_light,
+        lego_sensor
     }
     public static class Ev3Dev//this is for creating links to devices
     {
@@ -23,6 +25,7 @@ namespace Ev3Dev
                 "servo-motor/",
                 "tacho-motor/",
                 "lego-port/",
+                "lego-sensor/"
             };
         public static Dictionary<string, string> Items { get; private set; }
         public static void INIT()
@@ -69,6 +72,9 @@ namespace Ev3Dev
                     return DeviceType.lego_ev3_touch;
                 case ("lego-ev3-gyro"):
                     return DeviceType.lego_ev3_gyro;
+                case ("lego-sensor"):
+                    return DeviceType.lego_sensor;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -89,6 +95,8 @@ namespace Ev3Dev
                     return "lego-ev3-touch";
                 case (DeviceType.lego_ev3_gyro):
                     return "lego-ev3-gyro";
+                case (DeviceType.lego_sensor):
+                    return "lego-sensor";
                 default:
                     throw new ArgumentOutOfRangeException();
             }

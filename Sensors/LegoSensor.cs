@@ -67,13 +67,13 @@ namespace Ev3Dev.Sensors
         //constructor
         public LegoSensor(Device dev)
         {
-            if (dev._type != DeviceType.dc_motor)
-                throw new InvalidOperationException("this device is not a tachno motor");
+            Console.WriteLine("Device Type Is:" + Ev3Dev.DeviceType_To_String(dev._type));
+            if (dev._type != DeviceType.lego_ev3_gyro || dev._type != DeviceType.lego_ev3_light || dev._type != DeviceType.lego_ev3_touch)
+                throw new InvalidOperationException("this device is not a sensor");
 
             RootToDir = dev.RootToDir;
-
-            if (RootToDir.Contains("dc-motor"))
-                MountPoint = "??";//ReadVar("address");
+            if (RootToDir.Contains("lego-sensor"))
+                MountPoint = ReadVar("address");
             else if (RootToDir.Contains(":"))
                 MountPoint = RootToDir;
             else throw new InvalidOperationException("this uses the wrong class please re initulize the device and then try agen");

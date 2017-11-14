@@ -54,7 +54,7 @@ namespace Ev3Dev
                         if (x < Directorys.Length)
                         {
                             r = Directorys[x];
-                            if (r.Contains(":"))
+                            if (r.Contains(":"))//TODO this is unablie to detect sensors & DeviceType is allways tachno motor
                             {
                                 Directorys = Directory.GetDirectories(r);
                                 x = 0;
@@ -81,8 +81,28 @@ namespace Ev3Dev
                         }
                     }
                 }
+
+            if (D._type == DeviceType.lego_sensor)
+            {
+                string modes = ReadVar(D.RootToDir + "/modes");
+
+                if (modes == "GYRO-ANG GYRO-RATE GYRO-FAS GYRO-G&A GYRO-CAL TILT-RATE TILT-ANG")
+                    D._type = DeviceType.lego_ev3_gyro;
+
+                if (modes == "COL-REFLECT COL-AMBIENT COL-COLOR REF-RAW RGB-RAW COL-CAL")
+                    D._type = DeviceType.lego_ev3_light;
+
+                if (modes == "TOUCH")
+                    D._type = DeviceType.lego_ev3_touch;
+            }
+
+            Console.WriteLine("Device Updated:");
+            Console.WriteLine("Dev Addr=" + Addr);
+            Console.WriteLine("Dev RTD =" + D.RootToDir);
+            Console.WriteLine("Dev Type=" + D._type);
             return D;
         }
+
         private static string ReadVar(string path)
         {
             return IO.ReadValue(path);
@@ -312,12 +332,6 @@ namespace Ev3Dev
         }
         public static class OutputPorts//all Outputports ... so the devices them self's
         {
-            //do descovery then display devices here
-            //warning hot swaping devices will not work as expected
-            //if i dont update input every so often
-            //mnt points 'Out<A-D>:'
-
-            //WARNING UNTESTED
             public static Device OutA { get; internal set; }
             public static Device OutB { get; internal set; }
             public static Device OutC { get; internal set; }
