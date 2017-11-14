@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Ev3Dev.Motors
+namespace Ev3DevLib.Motors
 {
     //added on 21.10.2017 (DD/MM/YYYY)
     public enum ServoMotor_Commands

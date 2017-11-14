@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Ev3Dev.Misc
+namespace Ev3DevLib.Misc
 {
     //added on 21.10.2017 (DD/MM/YYYY)
     public enum LegoPort_Args

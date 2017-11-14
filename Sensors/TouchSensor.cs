@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ev3Dev.Sensors
+namespace Ev3DevLib.Sensors
 {
     public class TouchSensor
     {
@@ -25,7 +25,7 @@ namespace Ev3Dev.Sensors
         public TouchSensor(Device D)
         {
             RootToDir = D.RootToDir;
-            if (D._type == DeviceType.lego_ev3_touch)
+            if (D._type == DeviceType.lego_ev3_Touch)
                 if (ReadVar("modes") != "TOUCH")
                     throw new InvalidOperationException("this device is not a touch sensor if please notify me on git");
             PORT = new LegoSensor(D);

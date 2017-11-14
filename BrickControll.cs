@@ -2,7 +2,7 @@
 using System.Threading;
 using System.IO;
 
-namespace Ev3Dev
+namespace Ev3DevLib
 {
     public struct LCDIMG//for BrickControll.LCD.Graphics
     {
@@ -17,6 +17,7 @@ namespace Ev3Dev
     {
         public static void LoadPorts()
         {
+            if (Ev3Dev.DebuggText) Console.WriteLine("DEBUGG TEXT: updating ports");
             InputPorts.In1 = new Device() { RootToDir = "/sys/class/lego-port/port0" };
             InputPorts.In2 = new Device() { RootToDir = "/sys/class/lego-port/port1" };
             InputPorts.In3 = new Device() { RootToDir = "/sys/class/lego-port/port2" };
@@ -27,8 +28,8 @@ namespace Ev3Dev
             OutputPorts.OutD = new Device() { RootToDir = "/sys/class/lego-port/port7" };
 
             InputPorts.In1 = UpdateDev(InputPorts.In1, "in1");
-            InputPorts.In2 = UpdateDev(InputPorts.In2, "in3");
-            InputPorts.In3 = UpdateDev(InputPorts.In3, "in2");
+            InputPorts.In2 = UpdateDev(InputPorts.In2, "in2");
+            InputPorts.In3 = UpdateDev(InputPorts.In3, "in3");
             InputPorts.In4 = UpdateDev(InputPorts.In4, "in4");
 
             OutputPorts.OutA = UpdateDev(OutputPorts.OutA, "outA");
@@ -54,20 +55,27 @@ namespace Ev3Dev
                         if (x < Directorys.Length)
                         {
                             r = Directorys[x];
-                            if (r.Contains(":"))//TODO this is unablie to detect sensors & DeviceType is allways tachno motor
+                            if (r.Contains(":"))
                             {
-                                Directorys = Directory.GetDirectories(r);
-                                x = 0;
-                                for (; x < Directorys.Length; x++)
-                                    for (int y = 0; y < Ev3Dev.Classes.Length; y++)
-                                    {
-                                        if (Directorys[x].Substring(Directorys[x].LastIndexOf("/") + 1) + "/" == Ev3Dev.Classes[y])
+                                if (r.Contains("ev3-uart-host"))
+                                {
+                                    D._type = DeviceType.lego_sensor;
+                                }
+                                else
+                                {
+                                    Directorys = Directory.GetDirectories(r);
+                                    x = 0;
+                                    for (; x < Directorys.Length; x++)
+                                        for (int y = 0; y < Ev3Dev.Classes.Length; y++)
                                         {
-                                            D._type = Ev3Dev.String_To_DeviceType(Ev3Dev.Classes[y]);
-                                            r = Directorys[x];
-                                            break;
+                                            if (Directorys[x].Substring(Directorys[x].LastIndexOf("/") + 1) + "/" == Ev3Dev.Classes[y])
+                                            {
+                                                D._type = Ev3Dev.String_To_DeviceType(Ev3Dev.Classes[y]);
+                                                r = Directorys[x];
+                                                break;
+                                            }
                                         }
-                                    }
+                                }
                                 Directorys = Directory.GetDirectories("/sys/class/" + Ev3Dev.DeviceType_To_String(D._type));
                                 for (x = 0; x < Directorys.Length; x++)
                                 {
@@ -87,19 +95,25 @@ namespace Ev3Dev
                 string modes = ReadVar(D.RootToDir + "/modes");
 
                 if (modes == "GYRO-ANG GYRO-RATE GYRO-FAS GYRO-G&A GYRO-CAL TILT-RATE TILT-ANG")
-                    D._type = DeviceType.lego_ev3_gyro;
+                    D._type = DeviceType.lego_ev3_Gyro;
 
                 if (modes == "COL-REFLECT COL-AMBIENT COL-COLOR REF-RAW RGB-RAW COL-CAL")
-                    D._type = DeviceType.lego_ev3_light;
+                    D._type = DeviceType.lego_ev3_Light;
 
                 if (modes == "TOUCH")
-                    D._type = DeviceType.lego_ev3_touch;
-            }
+                    D._type = DeviceType.lego_ev3_Touch;
 
-            Console.WriteLine("Device Updated:");
-            Console.WriteLine("Dev Addr=" + Addr);
-            Console.WriteLine("Dev RTD =" + D.RootToDir);
-            Console.WriteLine("Dev Type=" + D._type);
+                if (modes == "US-DIST-CM US-DIST-IN US-LISTEN US-SI-CM US-SI-IN US-DC-CM US-DC-IN")
+                    D._type = DeviceType.lego_ev3_UltraSound;
+            }
+            if (Ev3Dev.DebuggText)
+            {
+                Console.WriteLine("DEBUGG DATA:");
+                Console.WriteLine("Device Updated:");
+                Console.WriteLine("Dev Addr=" + Addr);
+                Console.WriteLine("Dev RTD =" + D.RootToDir);
+                Console.WriteLine("Dev Type=" + D._type);
+            }
             return D;
         }
 

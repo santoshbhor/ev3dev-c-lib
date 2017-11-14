@@ -2,7 +2,7 @@
 using System.IO;
 using System.Diagnostics;
 
-namespace Ev3Dev
+namespace Ev3DevLib
 {
     public static class TermController
     {

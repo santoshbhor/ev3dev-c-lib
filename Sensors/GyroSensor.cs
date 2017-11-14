@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ev3Dev.Sensors
+namespace Ev3DevLib.Sensors
 {
     public enum GyroSensor_modes
     {
@@ -86,7 +86,7 @@ namespace Ev3Dev.Sensors
         public GyroSensor(Device D)
         {
             RootToDir = D.RootToDir;
-            if (D._type == DeviceType.lego_ev3_gyro)
+            if (D._type == DeviceType.lego_ev3_Gyro)
                 if (ReadVar("modes") != "GYRO-ANG GYRO-RATE GYRO-FAS GYRO-G&A GYRO-CAL TILT-RATE TILT-ANG")
                     throw new InvalidOperationException("this device is not a touch sensor if please notify me on git");
             PORT = new LegoSensor(D);

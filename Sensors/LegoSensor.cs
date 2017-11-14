@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
-using Ev3Dev;
+using Ev3DevLib;
 using System.IO;
 
-namespace Ev3Dev.Sensors
+namespace Ev3DevLib.Sensors
 {
     //added on 21.10.2017 (DD/MM/YYYY)
     public enum LegoSensor_Args
@@ -67,8 +67,8 @@ namespace Ev3Dev.Sensors
         //constructor
         public LegoSensor(Device dev)
         {
-            Console.WriteLine("Device Type Is:" + Ev3Dev.DeviceType_To_String(dev._type));
-            if (dev._type != DeviceType.lego_ev3_gyro || dev._type != DeviceType.lego_ev3_light || dev._type != DeviceType.lego_ev3_touch)
+            Console.WriteLine("Device Type Is:" + dev._type);
+            if (dev._type != DeviceType.lego_ev3_UltraSound && dev._type != DeviceType.lego_ev3_Gyro && dev._type != DeviceType.lego_ev3_Light && dev._type != DeviceType.lego_ev3_Touch)
                 throw new InvalidOperationException("this device is not a sensor");
 
             RootToDir = dev.RootToDir;

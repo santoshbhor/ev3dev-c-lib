@@ -1,11 +1,15 @@
 ﻿using System.IO;
+using System;
 
-namespace Ev3Dev
+namespace Ev3DevLib
 {
     public static class IO
     {
         public static string ReadValue(string path)
         {
+            if (Ev3Dev.DebuggText)
+                Console.WriteLine("Reading File:" + path);
+
             if(File.Exists(path))
             {
                 using (StreamReader R = new StreamReader(File.OpenRead(path)))
@@ -16,6 +20,8 @@ namespace Ev3Dev
         }
         public static void WriteValue(string path,string value)
         {
+            if (Ev3Dev.DebuggText)
+                Console.WriteLine("Writting (" + value + ") to " + path);
             if (File.Exists(path))
             {
                 using (StreamWriter W = new StreamWriter(File.OpenWrite(path)))

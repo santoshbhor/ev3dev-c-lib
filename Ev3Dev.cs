@@ -2,7 +2,7 @@
 using System.IO;
 using System;
 
-namespace Ev3Dev
+namespace Ev3DevLib
 {
     public enum DeviceType
     {
@@ -11,13 +11,15 @@ namespace Ev3Dev
         dc_motor,
         servo_motor,
         lego_port,
-        lego_ev3_touch,
-        lego_ev3_gyro,
-        lego_ev3_light,
+        lego_ev3_Touch,
+        lego_ev3_Gyro,
+        lego_ev3_Light,
+        lego_ev3_UltraSound,
         lego_sensor
     }
     public static class Ev3Dev//this is for creating links to devices
     {
+        public static bool DebuggText = false;
         //key=name Value=RootToDirectory
         internal static readonly string[] Classes = new string[]
             {
@@ -25,7 +27,8 @@ namespace Ev3Dev
                 "servo-motor/",
                 "tacho-motor/",
                 "lego-port/",
-                "lego-sensor/"
+                "lego-sensor/",
+                "ev3-uart-host/",
             };
         public static Dictionary<string, string> Items { get; private set; }
         public static void INIT()
@@ -58,7 +61,7 @@ namespace Ev3Dev
         public static DeviceType String_To_DeviceType(string x)
         {
             x = x.Replace("/", "");
-            switch(x)
+            switch (x)
             {
                 case ("dc-motor"):
                     return DeviceType.dc_motor;
@@ -69,11 +72,16 @@ namespace Ev3Dev
                 case ("lego-port"):
                     return DeviceType.lego_port;
                 case ("lego-ev3-touch"):
-                    return DeviceType.lego_ev3_touch;
+                    return DeviceType.lego_ev3_Touch;
                 case ("lego-ev3-gyro"):
-                    return DeviceType.lego_ev3_gyro;
+                    return DeviceType.lego_ev3_Gyro;
                 case ("lego-sensor"):
+                case ("ev3-uart-host"):
                     return DeviceType.lego_sensor;
+                case ("lego-ev3-ultrasound"):
+                    return DeviceType.lego_ev3_UltraSound;
+                case ("lego-ev3-light"):
+                    return DeviceType.lego_ev3_Light;
 
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -81,6 +89,7 @@ namespace Ev3Dev
         }
         public static string DeviceType_To_String(DeviceType x)
         {
+            Console.WriteLine("input:" + x);
             switch (x)
             {
                 case (DeviceType.dc_motor):
@@ -91,10 +100,14 @@ namespace Ev3Dev
                     return "tacho-motor";
                 case (DeviceType.lego_port):
                     return "lego-port";
-                case (DeviceType.lego_ev3_touch):
+                case (DeviceType.lego_ev3_Touch):
                     return "lego-ev3-touch";
-                case (DeviceType.lego_ev3_gyro):
+                case (DeviceType.lego_ev3_Gyro):
                     return "lego-ev3-gyro";
+                case (DeviceType.lego_ev3_UltraSound):
+                    return "lego-ev3-ultrasound";
+                case (DeviceType.lego_ev3_Light):
+                    return "lego-ev3-light";
                 case (DeviceType.lego_sensor):
                     return "lego-sensor";
                 default:

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ev3Dev.Sensors
+namespace Ev3DevLib.Sensors
 {
     public enum LightSensor_Color
     {
@@ -135,17 +135,17 @@ namespace Ev3Dev.Sensors
             switch (x)
             {
                 case (LightSensor_mode.COL_REFLECT):
-                    return "COL_REFLECT";
+                    return "COL-REFLECT";
                 case (LightSensor_mode.COL_AMBIENT):
-                    return "COL_AMBIENT";
+                    return "COL-AMBIENT";
                 case (LightSensor_mode.COL_COLOR):
-                    return "COL_COLOR";
+                    return "COL-COLOR";
                 case (LightSensor_mode.REF_RAW):
-                    return "REF_RAW";
+                    return "REF-RAW";
                 case (LightSensor_mode.RGB_RAW):
-                    return "RGB_RAW";
+                    return "RGB-RAW";
                 case (LightSensor_mode.COL_CAL):
-                    return "COL_CAL";
+                    return "COL-CAL";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -163,7 +163,7 @@ namespace Ev3Dev.Sensors
         public LightSensor(Device D)
         {
             RootToDir = D.RootToDir;
-            if (D._type == DeviceType.lego_ev3_light)
+            if (D._type == DeviceType.lego_ev3_Light)
                 if (ReadVar("modes") != "COL-REFLECT COL-AMBIENT COL-COLOR REF-RAW RGB-RAW COL-CAL")
                     throw new InvalidOperationException("this device is not a LightSensor if it is and is failing to detect it then please notify me on git");
             PORT = new LegoSensor(D);
