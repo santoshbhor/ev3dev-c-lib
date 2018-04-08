@@ -67,7 +67,9 @@ namespace Ev3DevLib.Sensors
         //constructor
         public LegoSensor(Device dev)
         {
-            Console.WriteLine("Device Type Is:" + dev._type);
+            if(Ev3Dev.DebuggText)
+                Console.WriteLine("Device Type Is:" + dev._type);
+
             if (dev._type != DeviceType.lego_ev3_UltraSound && dev._type != DeviceType.lego_ev3_Gyro && dev._type != DeviceType.lego_ev3_Light && dev._type != DeviceType.lego_ev3_Touch)
                 throw new InvalidOperationException("this device is not a sensor");
 

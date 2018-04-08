@@ -3,6 +3,7 @@ using Ev3DevLib;
 
 namespace Ev3DevLib.Sensors
 {
+    //Last Updated on 8.4.2018 (DD/MM/YYYY)
     public enum UltraSonic_Modes
     {
         DIST_CM,
@@ -13,13 +14,15 @@ namespace Ev3DevLib.Sensors
         DC_CM,
         DC_IN
     }
-    public class UltraSonic
+    public class UltraSonic : InPort
     {
         public LegoSensor PORT { get; internal set; }
         public int Value { get { return int.Parse(ReadVar("value0")); } }
         public UltraSonic_Modes Mode { get { return String_To_UltraSonic_Modes(ReadVar("mode")); } }
 
         public string RootToDir { get; internal set; }
+        public string[] _Options;
+        public override string[] Options => _Options;
 
         public UltraSonic_Modes String_To_UltraSonic_Modes(string x)
         {
@@ -75,18 +78,48 @@ namespace Ev3DevLib.Sensors
             IO.WriteValue(RootToDir + "/" + var, value);
         }
 
-        public UltraSonic(Device D)
+        public UltraSonic(Device D):base(D)
         {
             RootToDir = D.RootToDir;
             if (D._type == DeviceType.lego_ev3_UltraSound)
                 if (ReadVar("modes") != "US-DIST-CM US-DIST-IN US-LISTEN US-SI-CM US-SI-IN US-DC-CM US-DC-IN")
                     throw new InvalidOperationException("this device is not a touch sensor if please notify me on git");
+            _Options = new string[] {"Value", "Mode"};
             PORT = new LegoSensor(D);
         }
-
         public void ChangeMode(UltraSonic_Modes x)
         {
             WriteVar("mode", UltraSonic_Modes_To_String(x));
+        }
+
+        public override void ExecuteWriteOption(string Option, string[] Args)
+        {
+            switch(Option)
+            {
+                case ("Value"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("Mode"):
+                    ChangeMode(String_To_UltraSonic_Modes(Args[0]));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        public override string ExecuteReadOption(string Option)
+        {
+            switch (Option)
+            {
+                case ("Value"):
+                    return Value.ToString();
+
+                case ("Mode"):
+                    return UltraSonic_Modes_To_String(Mode);
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

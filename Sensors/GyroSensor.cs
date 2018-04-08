@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ev3DevLib.Sensors
 {
+    //Last Updated on 8.4.2018 (DD/MM/YYYY)
     public enum GyroSensor_modes
     {
         GYRO_ANG,
@@ -16,7 +17,7 @@ namespace Ev3DevLib.Sensors
         TILT_RATE,
         TILT_ANG,
     }
-    public class GyroSensor
+    public class GyroSensor : InPort
     {
         public LegoSensor PORT { get; internal set; }
 
@@ -26,6 +27,8 @@ namespace Ev3DevLib.Sensors
 
         public GyroSensor_modes Mode { get { return String_To_GyroSensor_modes(ReadVar("mode")); } }
         public string RootToDir { get; internal set; }
+        private string[] _Options;
+        public override string[] Options => _Options;
 
         private string ReadVar(string var)
         {
@@ -56,7 +59,7 @@ namespace Ev3DevLib.Sensors
                     return GyroSensor_modes.TILT_RATE;
 
                 default:
-                    throw new Exception("this should never happen");
+                    throw new Exception($"\"{x}\" is not a mode, Modes Are: GYRO-ANG, GYRO-CAL, GYRO-FAS, GYRO-RATE, TILT-ANG, TILT-RATE");
             }
         }
         public string GyroSensor_modes_To_String(GyroSensor_modes x)
@@ -83,18 +86,57 @@ namespace Ev3DevLib.Sensors
             }
         }
 
-        public GyroSensor(Device D)
+        public GyroSensor(Device D):base(D)
         {
             RootToDir = D.RootToDir;
             if (D._type == DeviceType.lego_ev3_Gyro)
                 if (ReadVar("modes") != "GYRO-ANG GYRO-RATE GYRO-FAS GYRO-G&A GYRO-CAL TILT-RATE TILT-ANG")
                     throw new InvalidOperationException("this device is not a touch sensor if please notify me on git");
+            _Options = new string[] { "Value", "G_and_AValue", "CALValue", "Mode" };
             PORT = new LegoSensor(D);
         }
 
         public void SetModeTo(GyroSensor_modes x)
         {
             WriteVar("mode", GyroSensor_modes_To_String(x));
+        }
+
+        public override void ExecuteWriteOption(string Option, string[] Args)
+        {
+            switch(Option)
+            {
+                case ("Value"):
+                case ("G_and_AValue"):
+                case ("CALValue"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("Mode"):
+                    SetModeTo(String_To_GyroSensor_modes(Args[0]));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        public override string ExecuteReadOption(string Option)
+        {
+            switch (Option)
+            {
+                case ("Value"):
+                    return Value.ToString();
+
+                case ("G_and_AValue"):
+                    return $"{G_and_AValue[0]}, {G_and_AValue[1]}";
+
+                case ("CALValue"):
+                    return $"{CALValue[0]}, {CALValue[1]}, {CALValue[2]}, {CALValue[3]},";
+
+                case ("Mode"):
+                    return GyroSensor_modes_To_String(Mode);
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

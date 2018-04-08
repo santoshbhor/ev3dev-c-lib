@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ev3DevLib.Motors
 {
-    //added on 21.10.2017 (DD/MM/YYYY)
+    //Last Updated on 5.4.2018 (DD/MM/YYYY)
     public enum TachoMotor_StopActions
     {
         coast,
@@ -45,7 +45,7 @@ namespace Ev3DevLib.Motors
     }
     //--------------------------------
 
-    public class TachoMotor
+    public class TachoMotor : OutPort
     {
 
         //values
@@ -69,8 +69,9 @@ namespace Ev3DevLib.Motors
         //my header info
         public string RootToDir { get; private set; }
         public string MountPoint { get; private set; }
-        public string[] Options { get; private set; }
-        
+        public string[] _Options;
+        public override string[] Options => _Options;
+
         //base functions
         private string ReadVar(string var)
         {
@@ -86,7 +87,7 @@ namespace Ev3DevLib.Motors
         }
 
         //constructor
-        public TachoMotor(Device dev)
+        public TachoMotor(Device dev) : base(dev)
         {
             if (dev._type != DeviceType.tacho_motor)
                 throw new InvalidOperationException("this device is not a tachno motor");
@@ -97,13 +98,8 @@ namespace Ev3DevLib.Motors
             else if(RootToDir.Contains(":"))
                 MountPoint = RootToDir;
             else throw new InvalidOperationException("this uses the wrong class please re initulize the device and then try agen");
-            Options = new string[] {// r=readonly | rw=read+write | w=writeonly
-                    "address:r",            "command:w",        "commands:r",       "count_per_rot:r",  "count_per_m:r",
-                    "full_travel_count:r",  "driver_name:r",    "duty_cycle:r",     "duty_cycle_sp:rw", "polarity:rw",
-                    "position:rw",          "hold_pid/kd:rw",   "hold_pid/ki:rw",   "hold_pid/kp:rw",   "max_speed:r",
-                    "position_sp:rw",       "speed:r",          "speed_sp:rw",      "ramp_up_sp:rw",    "ramp_down_sp:rw",
-                    "speed_pid/kd:rw",      "speed_pid/ki:rw",  "speed_pid/kp:rw",  "state:r",          "stop_action:rw",
-                    "stop_actions:r",       "time_sp:rw"
+            _Options = new string[] {// r=readonly | rw=read+write | w=writeonly
+                    "MoveTo","MoveRelativeTo","MoveFor","RunOn","RunAt","Stop","Reset", "Address", "MaxSpeed","Speed","Position","Dutycycle","RampUpSpeed","RampDownSpeed","Polarity","RPM","DriverName","LastCommand","State","StopAction"
                 };
         }
 
@@ -387,7 +383,7 @@ namespace Ev3DevLib.Motors
                     return true;
 
                 case (TachoMotor_Args.speed_sp):
-                    if (value < 0) return false;
+                    if (value < Max_Speed*-1) return false;
                     if (value > Max_Speed) return false;
                     return true;
 
@@ -429,6 +425,164 @@ namespace Ev3DevLib.Motors
                 throw new InvalidOperationException("this is a filler since command cant be read from DO NOT USE THIS AS A COMMAND TO SEND");
             else
                 WriteVar("command", TachoMotor_Commands_To_String(to));
+        }
+
+        public override void ExecuteWriteOption(string Option, string[] Args)
+        {
+            switch (Option)
+            {
+                case ("MoveTo"):
+                    MoveTo(int.Parse(Args[0]), int.Parse(Args[1]));
+                    break;
+
+                case ("MoveRelativeTo"):
+                    MoveRelativeTo(int.Parse(Args[0]), int.Parse(Args[1]));
+                    break;
+
+                case ("MoveFor"):
+                    MoveFor(int.Parse(Args[0]), int.Parse(Args[1]));
+                    break;
+
+                case ("RunOn"):
+                    RunOn(int.Parse(Args[0]), int.Parse(Args[1]));
+                    break;
+
+                case ("RunAt"):
+                    RunAt(int.Parse(Args[0]));
+                    break;
+
+                case ("Stop"):
+                    Stop(String_To_TachoMotor_StopActions(Args[0]));
+                    break;
+
+                case ("Reset"):
+                    Reset();
+                    break;
+
+                case ("Address"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("MaxSpeed"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("Speed"):
+                    ChangeArg(TachoMotor_Args.speed_sp, Args[0]);
+                    break;
+
+                case ("Position"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("Dutycycle"):
+                    ChangeArg(TachoMotor_Args.duty_cycle_sp, Args[0]);
+                    break;
+
+                case ("RampUpSpeed"):
+                    ChangeArg(TachoMotor_Args.ramp_up_sp, Args[0]);
+                    break;
+
+                case ("RampDownSpeed"):
+                    ChangeArg(TachoMotor_Args.ramp_down_sp, Args[0]);
+                    break;
+
+                case ("Polarity"):
+                    ChangePolarity(String_To_TachoMotor_Polarity(Args[0]));
+                    break;
+
+                case ("RPM"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("DriverName"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("LastCommand"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("State"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("StopAction"):
+                    ChangeStopAction(String_To_TachoMotor_StopActions(Args[0]));
+                    break;
+
+                case ("Command"):
+                    SetCommand(String_To_TachoMotor_Commands(Args[0]));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public override string ExecuteReadOption(string Option)
+        {
+            switch (Option)
+            {
+                case ("MoveTo"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("MoveRelativeTo"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("MoveFor"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("RunOn"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("RunAt"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("Stop"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("Reset"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("Address"):
+                    return Address;
+
+                case ("MaxSpeed"):
+                    return Max_Speed.ToString();
+
+                case ("Speed"):
+                    return Speed.ToString();
+
+                case ("Position"):
+                    return Position.ToString();
+
+                case ("Dutycycle"):
+                    return Dutycycle.ToString();
+                    
+                case ("RampUpSpeed"):
+                    return RampUpSpeed.ToString();
+
+                case ("RampDownSpeed"):
+                    return RampDownSpeed.ToString();
+
+                case ("Polarity"):
+                    return TachoMotor_Polarity_To_String(Polarity);
+
+                case ("RPM"):
+                    return RPM.ToString();
+
+                case ("DriverName"):
+                    return DriverName;
+
+                case ("LastCommand"):
+                    return TachoMotor_Commands_To_String(LastCommand);
+
+                case ("State"):
+                    return TachoMotor_States_To_String(State);
+
+                case ("StopAction"):
+                    return TachoMotor_StopActions_To_String(StopAction);
+
+                case ("Command"):
+                    throw new InvalidOperationException("WriteOnly");
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

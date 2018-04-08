@@ -20,7 +20,6 @@ namespace Ev3DevLib
     public static class Ev3Dev//this is for creating links to devices
     {
         public static bool DebuggText = false;
-        //key=name Value=RootToDirectory
         internal static readonly string[] Classes = new string[]
             {
                 "dc-motor/",
@@ -55,7 +54,7 @@ namespace Ev3DevLib
                 case (DeviceType.lego_port):
                     return "/sys/class/lego-port/";
                 default:
-                    throw new ArgumentNullException();//Device type somehow doesnt have a know value
+                    throw new ArgumentNullException();
             }
         }
         public static DeviceType String_To_DeviceType(string x)
@@ -89,7 +88,6 @@ namespace Ev3DevLib
         }
         public static string DeviceType_To_String(DeviceType x)
         {
-            Console.WriteLine("input:" + x);
             switch (x)
             {
                 case (DeviceType.dc_motor):
@@ -183,6 +181,6 @@ namespace Ev3DevLib
         public string[] Options { get; internal set; }
         public DeviceType _type { get; internal set; }
         public string DriverName { get; internal set; }
-        public bool Connected { get { return Directory.Exists(RootToDir); }}
+        public bool Connected { get { try { File.OpenWrite(RootToDir + "/command").Close(); return true; } catch { return false; } }}
     }
 }

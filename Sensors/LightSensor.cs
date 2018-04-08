@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ev3DevLib.Sensors
 {
+    //Last Updated on 8.4.2018 (DD/MM/YYYY)
     public enum LightSensor_Color
     {
         NoColor,
@@ -26,16 +27,18 @@ namespace Ev3DevLib.Sensors
         RGB_RAW,
         COL_CAL
     }
-    public class LightSensor
+    public class LightSensor : InPort
     {
         public LegoSensor PORT { get; internal set; }
-        public string RootToDir { get; internal set; }
         public int Value { get { if (Mode == LightSensor_mode.RGB_RAW || Mode == LightSensor_mode.COL_COLOR || Mode == LightSensor_mode.REF_RAW || Mode == LightSensor_mode.COL_CAL) throw new InvalidOperationException(); else return int.Parse(ReadVar("value0")); } }
-        public LightSensor_Color Color { get { if (Mode != LightSensor_mode.COL_COLOR) throw new InvalidOperationException(); else return Value_To_LightSensor_Color(int.Parse(ReadVar("value0"))); } }
         public short[] RGB { get { if (Mode != LightSensor_mode.RGB_RAW) throw new InvalidOperationException(); else return new short[] { short.Parse(ReadVar("value0")), short.Parse(ReadVar("value1")), short.Parse(ReadVar("value2")) }; } }
         public short[] REF_RAWValue { get { if (Mode != LightSensor_mode.REF_RAW) throw new InvalidOperationException(); else return new short[] { short.Parse(ReadVar("value0")), short.Parse(ReadVar("value0")) }; } }
-
+        public LightSensor_Color Color { get { if (Mode != LightSensor_mode.COL_COLOR) throw new InvalidOperationException(); else return Value_To_LightSensor_Color(int.Parse(ReadVar("value0"))); } }
         public LightSensor_mode Mode { get { return String_To_LightSensor_Mode(ReadVar("mode")); } }
+
+        public string RootToDir { get; internal set; }
+        public string[] _Options;
+        public override string[] Options => _Options;
 
         public string LightSensor_Color_To_String(LightSensor_Color x)
         {
@@ -127,7 +130,8 @@ namespace Ev3DevLib.Sensors
                 case ("COL-CAL"):
                     return LightSensor_mode.COL_CAL;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new Exception($"\"{x}\" is not a mode, Modes Are: COL-REFLECT, COL-AMBIENT, COL-COLOR, REF-RAW, RGB-RAW, COL-CAL");
+
             }
         }
         public string LightSensor_Mode_To_String(LightSensor_mode x)
@@ -160,18 +164,61 @@ namespace Ev3DevLib.Sensors
             IO.WriteValue(RootToDir + "/" + var, value);
         }
 
-        public LightSensor(Device D)
+        public LightSensor(Device D) : base(D)
         {
             RootToDir = D.RootToDir;
             if (D._type == DeviceType.lego_ev3_Light)
                 if (ReadVar("modes") != "COL-REFLECT COL-AMBIENT COL-COLOR REF-RAW RGB-RAW COL-CAL")
                     throw new InvalidOperationException("this device is not a LightSensor if it is and is failing to detect it then please notify me on git");
+            _Options = new string[] { "Value", "RGB", "REF_RAWValue", "Color", "Mode" };
             PORT = new LegoSensor(D);
         }
 
         public void ChangeMode(LightSensor_mode mode)
         {
             WriteVar("mode", LightSensor_Mode_To_String(mode));
+        }
+
+        public override void ExecuteWriteOption(string Option, string[] Args)
+        {
+            switch(Option)
+            {
+                case ("Value"):
+                case ("RGB"):
+                case ("Ref_RAWValue"):
+                case ("Color"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("Mode"):
+                    ChangeMode(String_To_LightSensor_Mode(Args[0]));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        public override string ExecuteReadOption(string Option)
+        {
+            switch (Option)
+            {
+                case ("Value"):
+                    return Value.ToString();
+
+                case ("RGB"):
+                    return $"{RGB[0]}, {RGB[1]}, {RGB[2]}";
+
+                case ("Ref_RAWValue"):
+                    return $"{REF_RAWValue[0]}, {REF_RAWValue[1]}";
+
+                case ("Color"):
+                    return LightSensor_Color_To_String(Color);
+
+                case ("Mode"):
+                    return LightSensor_Mode_To_String(Mode);
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

@@ -13,11 +13,20 @@ namespace Ev3DevLib
     //NO Updates within a static class
     //this is only for controll and on point information
     //ie we read as information is given
+    public enum LEDColor
+    {
+        off = 0,
+        Green,
+        red,
+        orange,
+    }
+
     public static class BrickControll
     {
         public static void LoadPorts()
         {
             if (Ev3Dev.DebuggText) Console.WriteLine("DEBUGG TEXT: updating ports");
+
             InputPorts.In1 = new Device() { RootToDir = "/sys/class/lego-port/port0" };
             InputPorts.In2 = new Device() { RootToDir = "/sys/class/lego-port/port1" };
             InputPorts.In3 = new Device() { RootToDir = "/sys/class/lego-port/port2" };
@@ -42,6 +51,8 @@ namespace Ev3DevLib
             if (D.RootToDir != null)
                 if (D.RootToDir.StartsWith("/sys/class/lego-port/port"))
                 {
+                    if (Directory.Exists(D.RootToDir))
+                    {
                     string r = D.RootToDir;
                     string[] Directorys = Directory.GetDirectories(r);
                     if (Directorys.Length > 0)
@@ -52,37 +63,38 @@ namespace Ev3DevLib
                             if (Directorys[x].Contains(":"))
                                 break;
                         }
-                        if (x < Directorys.Length)
-                        {
-                            r = Directorys[x];
-                            if (r.Contains(":"))
+                            if (x < Directorys.Length)
                             {
-                                if (r.Contains("ev3-uart-host"))
+                                r = Directorys[x];
+                                if (r.Contains(":"))
                                 {
-                                    D._type = DeviceType.lego_sensor;
-                                }
-                                else
-                                {
-                                    Directorys = Directory.GetDirectories(r);
-                                    x = 0;
-                                    for (; x < Directorys.Length; x++)
-                                        for (int y = 0; y < Ev3Dev.Classes.Length; y++)
-                                        {
-                                            if (Directorys[x].Substring(Directorys[x].LastIndexOf("/") + 1) + "/" == Ev3Dev.Classes[y])
-                                            {
-                                                D._type = Ev3Dev.String_To_DeviceType(Ev3Dev.Classes[y]);
-                                                r = Directorys[x];
-                                                break;
-                                            }
-                                        }
-                                }
-                                Directorys = Directory.GetDirectories("/sys/class/" + Ev3Dev.DeviceType_To_String(D._type));
-                                for (x = 0; x < Directorys.Length; x++)
-                                {
-                                    if (ReadVar(Directorys[x] + "/address") == Addr)
+                                    if (r.Contains("ev3-uart-host"))
                                     {
-                                        D.RootToDir = Directorys[x];
-                                        break;
+                                        D._type = DeviceType.lego_sensor;
+                                    }
+                                    else
+                                    {
+                                        Directorys = Directory.GetDirectories(r);
+                                        x = 0;
+                                        for (; x < Directorys.Length; x++)
+                                            for (int y = 0; y < Ev3Dev.Classes.Length; y++)
+                                            {
+                                                if (Directorys[x].Substring(Directorys[x].LastIndexOf("/") + 1) + "/" == Ev3Dev.Classes[y])
+                                                {
+                                                    D._type = Ev3Dev.String_To_DeviceType(Ev3Dev.Classes[y]);
+                                                    r = Directorys[x];
+                                                    break;
+                                                }
+                                            }
+                                    }
+                                    Directorys = Directory.GetDirectories("/sys/class/" + Ev3Dev.DeviceType_To_String(D._type));
+                                    for (x = 0; x < Directorys.Length; x++)
+                                    {
+                                        if (ReadVar(Directorys[x] + "/address") == Addr)
+                                        {
+                                            D.RootToDir = Directorys[x];
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -312,7 +324,7 @@ namespace Ev3DevLib
                 else throw new ArgumentOutOfRangeException();
             }
         }
-        public static class BrickInput//the leds/buttons on the birck its self
+        public static class Brick//the leds/buttons on the birck its self
         {
             public const string KeyMapFile = "??";
             public static class KeyMaps
@@ -328,17 +340,181 @@ namespace Ev3DevLib
                 public static byte Down = 108;
             }
 
-            //TODO findout how to controll brick leds 
+            public static class LEDS
+            {
+                public static byte LeftGreenLED {
+                    get { return byte.Parse(ReadVar("/sys/class/leds/ev3:left:green:ev3dev/brightness")); }
+                    set { IO.WriteValue("/sys/class/leds/ev3:left:green:ev3dev/brightness",value.ToString()); }
+                }
+                public static byte RightGreenLED
+                {
+                    get { return byte.Parse(ReadVar("/sys/class/leds/ev3:right:green:ev3dev/brightness")); }
+                    set { IO.WriteValue("/sys/class/leds/ev3:right:green:ev3dev/brightness", value.ToString()); }
+                }
+                public static byte LeftRedLED
+                {
+                    get { return byte.Parse(ReadVar("/sys/class/leds/ev3:left:red:ev3dev/brightness")); }
+                    set { IO.WriteValue("/sys/class/leds/ev3:left:red:ev3dev/brightness", value.ToString()); }
+                }
+                public static byte RightRedLED
+                {
+                    get { return byte.Parse(ReadVar("/sys/class/leds/ev3:right:red:ev3dev/brightness")); }
+                    set { IO.WriteValue("/sys/class/leds/ev3:right:red:ev3dev/brightness", value.ToString()); }
+                }
 
+                public static void SetLeftLedsTo(LEDColor col)
+                {
+                    switch (col)
+                    {
+                        case (LEDColor.off):
+                            LeftRedLED = 0;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.Green):
+                            LeftRedLED = 0;
+                            LeftGreenLED = 255;
+                            break;
+                        case (LEDColor.red):
+                            LeftRedLED = 255;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.orange):
+                            LeftRedLED = 255;
+                            LeftGreenLED = 255;
+                            break;
+                    }
+                }
+                public static void SetLeftLedsTo(LEDColor col, byte Strength)
+                {
+                    switch (col)
+                    {
+                        case (LEDColor.off):
+                            LeftRedLED = 0;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.Green):
+                            LeftRedLED = 0;
+                            LeftGreenLED = Strength;
+                            break;
+                        case (LEDColor.red):
+                            LeftRedLED = Strength;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.orange):
+                            LeftRedLED = Strength;
+                            LeftGreenLED = Strength;
+                            break;
+                    }
+                }
+                public static void SetRightLedsTo(LEDColor col)
+                {
+                    switch (col)
+                    {
+                        case (LEDColor.off):
+                            RightRedLED = 0;
+                            RightGreenLED = 0;
+                            break;
+                        case (LEDColor.Green):
+                            LeftRedLED = 0;
+                            RightGreenLED = 255;
+                            break;
+                        case (LEDColor.red):
+                            RightRedLED = 255;
+                            RightGreenLED = 0;
+                            break;
+                        case (LEDColor.orange):
+                            RightRedLED = 255;
+                            RightGreenLED = 255;
+                            break;
+                    }
+                }
+                public static void SetRightLedsTo(LEDColor col, byte Strength)
+                {
+                    switch (col)
+                    {
+                        case (LEDColor.off):
+                            RightRedLED = 0;
+                            RightGreenLED = 0;
+                            break;
+                        case (LEDColor.Green):
+                            RightRedLED = 0;
+                            RightGreenLED = Strength;
+                            break;
+                        case (LEDColor.red):
+                            RightRedLED = Strength;
+                            RightGreenLED = 0;
+                            break;
+                        case (LEDColor.orange):
+                            RightRedLED = Strength;
+                            RightGreenLED = Strength;
+                            break;
+                    }
+                }
+                public static void SetBothLedsTo(LEDColor col)
+                {
+                    switch (col)
+                    {
+                        case (LEDColor.off):
+                            RightRedLED = 0;
+                            RightGreenLED = 0;
+                            LeftRedLED = 0;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.Green):
+                            RightRedLED = 0;
+                            RightGreenLED = 255;
+                            LeftRedLED = 0;
+                            LeftGreenLED = 255;
+                            break;
+                        case (LEDColor.red):
+                            RightRedLED = 255;
+                            RightGreenLED = 0;
+                            LeftRedLED = 255;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.orange):
+                            RightRedLED = 255;
+                            RightGreenLED = 255;
+                            LeftRedLED = 255;
+                            LeftGreenLED = 255;
+                            break;
+                    }
+                }
+                public static void SetBothLedsTo(LEDColor col, byte Strength)
+                {
+                    switch (col)
+                    {
+                        case (LEDColor.off):
+                            RightRedLED = 0;
+                            RightGreenLED = 0;
+                            LeftRedLED = 0;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.Green):
+                            RightRedLED = 0;
+                            RightGreenLED = Strength;
+                            LeftRedLED = 0;
+                            LeftGreenLED = Strength;
+                            break;
+                        case (LEDColor.red):
+                            RightRedLED = Strength;
+                            RightGreenLED = 0;
+                            LeftRedLED = Strength;
+                            LeftGreenLED = 0;
+                            break;
+                        case (LEDColor.orange):
+                            RightRedLED = Strength;
+                            RightGreenLED = Strength;
+                            LeftRedLED = Strength;
+                            LeftGreenLED = Strength;
+                            break;
+                    }
+                }
+            }
         }
         public static class InputPorts//all Inputports ... so the devices them self's
         {
-            //do descovery then display devices here
-            //warning hot swaping devices will not work as expected
-            //if i dont update input every so often
-            //mnt points 'In<1-4>:' 
 
-            //WARNING UNTESTED
             public static Device In1 { get; internal set; }
             public static Device In2 { get; internal set; }
             public static Device In3 { get; internal set; }

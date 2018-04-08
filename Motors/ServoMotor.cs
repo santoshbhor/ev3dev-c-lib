@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ev3DevLib.Motors
 {
-    //added on 21.10.2017 (DD/MM/YYYY)
+    //Last Updated on 5.4.2018 (DD/MM/YYYY)
     public enum ServoMotor_Commands
     {
         unknown = 0,//deffult
@@ -29,7 +29,7 @@ namespace Ev3DevLib.Motors
     }
     //--------------------------------
 
-    public class ServoMotor
+    public class ServoMotor : OutPort
     {
         //values
         //my Rule not matter what all of the values must be updated inside UPDATE
@@ -50,7 +50,8 @@ namespace Ev3DevLib.Motors
         //my header info
         public string RootToDir { get; private set; }
         public string MountPoint { get; private set; }
-        public string[] Options { get; private set; }
+        public string[] _Options;
+        public override string[] Options => _Options;
 
         //base functions
         private string ReadVar(string var)
@@ -63,7 +64,7 @@ namespace Ev3DevLib.Motors
         }
 
         //constructorpublic
-        ServoMotor(Device dev)
+        public ServoMotor(Device dev) : base(dev)
         {
             if (dev._type != DeviceType.servo_motor)
                 throw new InvalidOperationException("this device is not a tachno motor");
@@ -74,10 +75,8 @@ namespace Ev3DevLib.Motors
             else if (RootToDir.Contains(":"))
                 MountPoint = RootToDir;
             else throw new InvalidOperationException("this uses the wrong class please re initulize the device and then try agen");
-            Options = new string[] {// r=readonly | rw=read+write | w=writeonly
-                    "address:r",        "command:w",        "driver_name:r",    "max_pulse_sp:rw",
-                    "mid_pulse_sp:rw",  "min_pulse_sp:rw",  "polarity:rw",      "position_sp:rw",
-                    "rate_sp:rw",       "state:r"
+            _Options = new string[] {
+                    "MoveTo", "FLOAT", "Address", "LastCommand", "DriverName", "MaxPulse", "MidPulse", "MinPulse", "Polarity", "Rate", "RateSupported", "Position", "State"
                 };
         }
 
@@ -264,5 +263,107 @@ namespace Ev3DevLib.Motors
             }
         }
 
+        public override void ExecuteWriteOption(string Option, string[] Args)
+        {
+            switch (Option)
+            {
+                case ("MoveTo"):
+                    MoveTo(int.Parse(Args[0]));
+                    break;
+
+                case ("FLOAT"):
+                    FLOAT();
+                    break;
+
+                case ("Address"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("LastCommand"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("DriverName"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("MaxPulse"):
+                    SetArg(int.Parse(Args[0]), ServoMotor_Args.max_pulse_sp);
+                    break;
+
+                case ("MidPulse"):
+                    SetArg(int.Parse(Args[0]), ServoMotor_Args.mid_pulse_sp);
+                    break;
+
+                case ("MinPulse"):
+                    SetArg(int.Parse(Args[0]), ServoMotor_Args.min_pulse_sp);
+                    break;
+
+                case ("Polarity"):
+                    SetPolarity(String_To_ServoMotor_Polarity(Args[0]));
+                    break;
+
+                case ("Rate"):
+                    SetArg(int.Parse(Args[0]), ServoMotor_Args.rate_sp);
+                    break;
+
+                case ("RateSupported"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("State"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("Command"):
+                    SetCommand(String_To_ServoMotor_Commands(Args[0]));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        public override string ExecuteReadOption(string Option)
+        {
+            switch (Option)
+            {
+                case ("MoveTo"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("FLOAT"):
+                    throw new InvalidOperationException("Executeable");
+
+                case ("Address"):
+                    throw new InvalidOperationException("ReadOnly");
+
+                case ("LastCommand"):
+                    return ServoMotor_Commands_To_String(LastCommand);
+
+                case ("DriverName"):
+                    return DriverName;
+
+                case ("MaxPulse"):
+                    return MaxPulse.ToString();
+
+                case ("MidPulse"):
+                    return MidPulse.ToString();
+                    
+                case ("MinPulse"):
+                    return MinPulse.ToString();
+                    
+                case ("Polarity"):
+                    return ServoMotor_Polarity_To_String(Polarity);
+
+                case ("Rate"):
+                    return Rate.ToString();
+                    
+                case ("RateSupported"):
+                    return RateSupported ? "True" : "False";
+
+                case ("State"):
+                    return ServoMotor_States_To_String(State);
+
+                case ("Command"):
+                    throw new InvalidOperationException("WriteOnly");
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 }
