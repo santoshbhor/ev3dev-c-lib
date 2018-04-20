@@ -1,6 +1,0 @@
-C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\bin\Release\Ev3Dev.dll
-C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\bin\Release\Ev3Dev.pdb
-C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Release\Ev3Dev.csprojResolveAssemblyReference.cache
-C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Release\Ev3Dev.csproj.CoreCompileInputs.cache
-C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Release\Ev3Dev.dll
-C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Release\Ev3Dev.pdb

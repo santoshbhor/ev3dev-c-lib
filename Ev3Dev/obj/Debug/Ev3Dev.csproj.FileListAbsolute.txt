@@ -1,0 +1,6 @@
+c:\users\bailey\documents\visual studio 2017\Projects\Ev3Dev\Ev3Dev\bin\Debug\Ev3Dev.dll
+c:\users\bailey\documents\visual studio 2017\Projects\Ev3Dev\Ev3Dev\bin\Debug\Ev3Dev.pdb
+c:\users\bailey\documents\visual studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Debug\Ev3Dev.csprojResolveAssemblyReference.cache
+c:\users\bailey\documents\visual studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Debug\Ev3Dev.dll
+c:\users\bailey\documents\visual studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Debug\Ev3Dev.pdb
+C:\Users\BAILEY\Documents\Visual Studio 2017\Projects\Ev3Dev\Ev3Dev\obj\Debug\Ev3Dev.csproj.CoreCompileInputs.cache
